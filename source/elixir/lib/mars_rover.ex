@@ -1,18 +1,6 @@
 defmodule MarsRover do
-  @moduledoc """
-  Documentation for MarsRover.
-  """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> MarsRover.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def main(args) do
+    IO.inspect(args)
   end
 end

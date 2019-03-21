@@ -7,7 +7,9 @@ defmodule MarsRover.MixProject do
       version: "0.1.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      escript: escript(),
+      aliases: aliases()
     ]
   end
 
@@ -23,6 +25,23 @@ defmodule MarsRover.MixProject do
     [
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+    ]
+  end
+
+  @name "MarsRover"
+  @filepath "./#{@name}"
+
+  defp escript() do
+    [
+      main_module: MarsRover,
+      name: @name
+    ]
+  end
+
+  defp aliases() do
+    [
+      build: ["cmd rm -f #{@filepath}", "escript.build"],
+      exec: ["build", "cmd #{@filepath}"]
     ]
   end
 end
