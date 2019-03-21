@@ -23,3 +23,5 @@ erl_crash.dump
 mars_rover-*.tar
 
 MarsRover
+
+.elixir_ls
