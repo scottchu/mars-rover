@@ -58,7 +58,7 @@ defmodule MarsRover.GameCase do
         World.create(plateau, rovers)
       end
 
-      def create_game(world, instructions) do
+      def create_game(world, instructions \\ []) do
         Game.create(world, instructions)
       end
     end
