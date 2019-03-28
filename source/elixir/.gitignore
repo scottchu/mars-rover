@@ -25,3 +25,4 @@ mars_rover-*.tar
 MarsRover
 
 .elixir_ls
+.vscode
