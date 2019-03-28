@@ -1,6 +1,4 @@
 defmodule MarsRover do
-
-  def main(args) do
-    IO.inspect(args)
+  def main(_opts) do
   end
 end
