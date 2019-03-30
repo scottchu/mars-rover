@@ -25,7 +25,8 @@ defmodule MarsRover.Rovers do
     end
   end
 
-  def replace(%Rover{} = rover, id, %__MODULE__{rovers: rovers}) do
+  @spec update(Rover.t(), integer(), t()) :: t()
+  def update(%Rover{} = rover, id, %__MODULE__{rovers: rovers}) do
     rovers
     |> List.replace_at(id, rover)
     |> create()

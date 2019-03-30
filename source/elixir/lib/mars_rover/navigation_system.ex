@@ -10,13 +10,9 @@ defmodule MarsRover.NavigationSystem do
     Orientation
   }
 
-  @spec within_bound?(Plateau.t(), Rover.t()) :: boolean()
-  def within_bound?(nil, _rover),
-    do: false
-
-  def within_bound?(%Plateau{bound: bound}, %Rover{coordinate: coordinate}) do
-    Bound.within?(bound, coordinate)
-  end
+  @spec within_bound?(Rover.t(), Plateau.t()) :: boolean()
+  def within_bound?(_rover, nil), do: false
+  def within_bound?(%Rover{coordinate: coordinate}, %Plateau{bound: bound}), do: Bound.within?(bound, coordinate)
 
   @spec outof_bound?(Plateau.t(), Rover.t()) :: boolean()
   def outof_bound?(nil, _rover),

@@ -41,7 +41,7 @@ defmodule MarsRover.Instruction.Rover do
       with coordinate <- Coordinate.create(point),
            orientation <- Orientation.create(direction),
            rover <- Rover.create(coordinate, orientation),
-           true <- NavigationSystem.within_bound?(plateau, rover) do
+           true <- NavigationSystem.within_bound?(rover, plateau) do
         rover
         |> Rovers.insert(rovers)
         |> World.update(:rovers, world)
@@ -51,28 +51,27 @@ defmodule MarsRover.Instruction.Rover do
       end
     end
 
-    defp _perform(:move, [rover_id], %World{rovers: rovers} = world) do
-      case Rovers.lookup(rovers, rover_id) do
-        {:ok, %Rover{} = rover} ->
-          rover
-          |> NavigationSystem.move()
-          |> Rovers.replace(rover_id, rovers)
-          |> World.update(:rovers, world)
-
-        {:error, _} ->
+    defp _perform(:move, [rover_id], %World{plateau: plateau, rovers: rovers} = world) do
+      with {:ok, rover} <- Rovers.lookup(rovers, rover_id),
+           new_rover <- NavigationSystem.move(rover),
+           true <- NavigationSystem.within_bound?(new_rover, plateau) do
+        new_rover
+        |> Rovers.update(rover_id, rovers)
+        |> World.update(:rovers, world)
+      else
+        _ ->
           world
       end
     end
 
     defp _perform(action, [rover_id], %World{rovers: rovers} = world) do
-      case Rovers.lookup(rovers, rover_id) do
-        {:ok, %Rover{} = rover} ->
-          rover
-          |> NavigationSystem.turn(action)
-          |> Rovers.replace(rover_id, rovers)
-          |> World.update(:rovers, world)
-
-        {:error, _} ->
+      with {:ok, rover} <- Rovers.lookup(rovers, rover_id),
+           new_rover <- NavigationSystem.turn(rover, action) do
+        new_rover
+        |> Rovers.update(rover_id, rovers)
+        |> World.update(:rovers, world)
+      else
+        _ ->
           world
       end
     end
