@@ -54,6 +54,7 @@ defmodule MarsRover.Instruction.Rover do
     defp _perform(:move, [rover_id], %World{plateau: plateau, rovers: rovers} = world) do
       with {:ok, rover} <- Rovers.lookup(rovers, rover_id),
            new_rover <- NavigationSystem.move(rover),
+           false <- Rovers.collide?(new_rover, rover_id, rovers),
            true <- NavigationSystem.within_bound?(new_rover, plateau) do
         new_rover
         |> Rovers.update(rover_id, rovers)

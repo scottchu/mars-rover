@@ -36,4 +36,28 @@ defmodule MarsRover.Rovers do
   def insert(%Rover{} = rover, %__MODULE__{rovers: rovers}) do
     create(rovers ++ [rover])
   end
+
+  @spec collide?(Rover.t(), term(), t()) :: boolean()
+  def collide?(%Rover{} = rover, id, %__MODULE__{rovers: rovers}) do
+    rovers
+    |> Enum.with_index()
+    |> _collide?(rover, id)
+  end
+
+  @spec _collide?([Rover.t()], Rover.t(), term()) :: boolean()
+  defp _collide?([], _rover, _id),
+    do: false
+
+  defp _collide?([{_, index} | tail], rover, index),
+    do: _collide?(tail, rover, index)
+
+  defp _collide?(
+         [{%Rover{coordinate: coordinate}, _index} | _tail],
+         %Rover{coordinate: coordinate},
+         _id
+       ),
+       do: true
+
+  defp _collide?([_ | tail], rover, id),
+    do: _collide?(tail, rover, id)
 end

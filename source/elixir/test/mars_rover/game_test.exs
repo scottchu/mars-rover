@@ -1,4 +1,4 @@
-defmodule MarsRover.TurnBasedGameTest do
+defmodule MarsRover.GameTest do
   use MarsRover.GameCase,
     async: true,
     Bound: MarsRover.TwoDimension.Bound,
@@ -11,8 +11,7 @@ defmodule MarsRover.TurnBasedGameTest do
     Rover,
     Rovers,
     World,
-    Instruction,
-    TurnBasedGame
+    Instruction
   }
 
   describe("Game.start/1 behaviour") do
@@ -27,7 +26,7 @@ defmodule MarsRover.TurnBasedGameTest do
       world = create_world(plateau, rovers)
       game = create_game(world, [])
 
-      assert TurnBasedGame.start(game) == game
+      assert Game.start(game) == game
     end
 
     test("instructions -- from README example") do
@@ -70,26 +69,54 @@ defmodule MarsRover.TurnBasedGameTest do
         |> create_world(new_rovers)
         |> create_game([])
 
-      assert TurnBasedGame.start(game) == expected_game
+      assert Game.start(game) == expected_game
     end
 
-    # test("instructions -- with invalid landing coordinate") do
-    #   plateau = create_plateau({10, 10})
-    #   world = create_world(plateau)
+    test("instructions -- with invalid landing coordinate") do
+      plateau = create_plateau({10, 10})
+      world = create_world(plateau)
 
-    #   instructions = [
-    #     Instruction.Rover.create(:create, [{11, 10}])
-    #   ]
+      instructions = [
+        Instruction.Rover.create(:create, [{11, 10}])
+      ]
 
-    #   game = create_game(world, instructions)
+      game = create_game(world, instructions)
 
-    #   IO.inspect(game)
+      assert Game.start(game) == %Game{game | instructions: []}
+    end
 
-    #   assert TurnBasedGame.start(game)
-    # end
+    test("instructions -- with out of bound check") do
+      plateau = create_plateau({10, 10})
+      world = create_world(plateau)
 
-    # test("instructions -- with out of bound check")
+      instructions = [
+        Instruction.Rover.create(:create, [{3, 5}, :north]),
+        Instruction.Rover.create(:left, [0]),
+        Instruction.Rover.create(:move, [0]),
+        Instruction.Rover.create(:move, [0]),
+        Instruction.Rover.create(:move, [0]),
+        Instruction.Rover.create(:move, [0]),
+        Instruction.Rover.create(:move, [0])
+      ]
 
-    # test("instructions -- with colliding check")
+      game = create_game(world, instructions)
+
+      assert Game.start(game) == create_game(create_world(plateau, create_rovers([{0, 5, :west}])), [])
+    end
+
+    test("instructions -- with colliding check") do
+      plateau = create_plateau({10, 10})
+      world = create_world(plateau)
+
+      instructions = [
+        Instruction.Rover.create(:create, [{3, 5}, :north]),
+        Instruction.Rover.create(:create, [{3, 4}, :north]),
+        Instruction.Rover.create(:move, [1])
+      ]
+
+      game = create_game(world, instructions)
+
+      assert Game.start(game) == create_game(create_world(plateau, create_rovers([{3, 5, :north}, {3, 4, :north}])), [])
+    end
   end
 end
