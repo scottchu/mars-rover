@@ -27,28 +27,35 @@ defmodule MarsRover.Instruction.Rover do
   end
 
   defimpl MarsRover.Instruction do
-
     @spec perform(@for.t(), World.t()) :: World.t()
     def perform(%@for{action: action, args: args}, %World{} = world) do
       _perform(action, args, world)
     end
 
     @spec _perform(atom(), @for.args(), World.t()) :: World.t()
-    defp _perform(:create, [point, direction | _], %World{rovers: rovers} = world) do
-      coordinate = Coordinate.create(point)
-      orientation = Orientation.create(direction)
-
-      Rover.create(coordinate, orientation)
-      |> Rovers.insert(rovers)
-      |> World.update(:rovers, world)
+    defp _perform(
+           :create,
+           [point, direction | _],
+           %World{plateau: plateau, rovers: rovers} = world
+         ) do
+      with coordinate <- Coordinate.create(point),
+           orientation <- Orientation.create(direction),
+           rover <- Rover.create(coordinate, orientation),
+           true <- NavigationSystem.within_bound?(plateau, rover) do
+        rover
+        |> Rovers.insert(rovers)
+        |> World.update(:rovers, world)
+      else
+        false ->
+          world
+      end
     end
 
     defp _perform(:move, [rover_id], %World{rovers: rovers} = world) do
       case Rovers.lookup(rovers, rover_id) do
-        {:ok, %Rover{coordinate: coordinate, orientation: orientation} = rover} ->
-          coordinate
-          |> NavigationSystem.move(orientation)
-          |> Rover.update(:coordinate, rover)
+        {:ok, %Rover{} = rover} ->
+          rover
+          |> NavigationSystem.move()
           |> Rovers.replace(rover_id, rovers)
           |> World.update(:rovers, world)
 
@@ -57,20 +64,19 @@ defmodule MarsRover.Instruction.Rover do
       end
     end
 
-    defp _perform(action, [rover_id], %World{rovers: rovers} = world) when action in [:left, :right]  do
+    defp _perform(action, [rover_id], %World{rovers: rovers} = world) do
       case Rovers.lookup(rovers, rover_id) do
-        {:ok, %Rover{orientation: orientation} = rover} ->
-          orientation
+        {:ok, %Rover{} = rover} ->
+          rover
           |> NavigationSystem.turn(action)
-          |> Rover.update(:orientation, rover)
           |> Rovers.replace(rover_id, rovers)
           |> World.update(:rovers, world)
+
         {:error, _} ->
           world
       end
     end
 
     defp _perform(_action, _args, world), do: world
-
   end
 end

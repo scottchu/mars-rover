@@ -1,23 +1,44 @@
 defmodule MarsRover.NavigationSystem do
-  alias MarsRover.NavigationSystem.{Bound, Coordinate, Orientation}
+  alias MarsRover.{
+    Plateau,
+    Rover
+  }
 
-  @spec within_bound?(Bound.t(), Coordinate.t()) :: boolean()
-  def within_bound?(bound, coordinate) do
+  alias MarsRover.NavigationSystem.{
+    Bound,
+    Coordinate,
+    Orientation
+  }
+
+  @spec within_bound?(Plateau.t(), Rover.t()) :: boolean()
+  def within_bound?(nil, _rover),
+    do: false
+
+  def within_bound?(%Plateau{bound: bound}, %Rover{coordinate: coordinate}) do
     Bound.within?(bound, coordinate)
   end
 
-  @spec outof_bound?(Bound.t(), Coordinate.t()) :: boolean()
-  def outof_bound?(bound, coordinate) do
-    Bound.outof?(bound, coordinate)
+  @spec outof_bound?(Plateau.t(), Rover.t()) :: boolean()
+  def outof_bound?(nil, _rover),
+    do: true
+
+  def outof_bound?(%Plateau{bound: bound}, %Rover{coordinate: coordinate}) do
+    !within_bound?(bound, coordinate)
   end
 
-  @spec move(Coordinate.t(), Orientation.t()) :: Coordinate.t()
-  def move(coordinate, orientation) do
-    Coordinate.move(coordinate, orientation)
+  @spec move(Rover.t()) :: Rover.t()
+  def move(%Rover{coordinate: coordinate, orientation: orientation} = rover) do
+    coordinate
+    |> Coordinate.move(orientation)
+    |> Rover.update(:coordinate, rover)
   end
 
-  @spec turn(Orientation.t(), Orientation.side()) :: Orientation.t()
-  def turn(orientation, to) do
-    Orientation.turn(orientation, to)
+  @spec turn(Rover.t(), Orientation.side()) :: Rover.t()
+  def turn(%Rover{orientation: orientation} = rover, to) when to in [:left, :right] do
+    orientation
+    |> Orientation.turn(to)
+    |> Rover.update(:orientation, rover)
   end
+
+  def turn(%Rover{} = rover, _to), do: rover
 end
